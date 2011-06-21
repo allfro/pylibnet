@@ -636,6 +636,7 @@ static PyMethodDef context_methods[] = {
 			"type - type of ICMP packet (should be ICMP_REDIRECT)\n"
 			"code - code of ICMP packet (should be one of the four redirect codes)\n"
 			"sum - checksum (0 for libnet to autofill)\n"
+			"gateway - the IPv4 address of the new gateway\n"
 			"payload - optional payload or None\n"
 			"ptag - protocol tag to modify an existing header, 0 to build a new one\n"
 			"\nReturns: protocol tag value on success, -1 on error"
