@@ -1,0 +1,36 @@
+pylibnet - Python module for the libnet packet injection library
+Copyright (C) 2009  Nadeem Douba
+
+To install this module you will need to install the following:
+	* libnet-1.1.x: to inject your packets.
+
+All these prerequisites can be installed using apt-get, port, or fink.
+Debian users can install the following packages to meet the pre-
+requisite requirements:
+	* build-essential
+	* libnet1-dev
+	* python-dev
+
+For Mac OS/X users, please use the libnet libraries that come from
+the Fink distribution. If you try to compile libnet in Mac OS/X you
+will run into a bug that causes "pblock not found" errors.
+
+The documentation will be in the next release. Your input is always
+valued. The documentation from libnet-1.1.x can be used with the
+following principles in mind:
+
+	* To create a context use libnet.context(injection_type, device)
+		+ This will create the libnet_t *l pointer which is used to
+			build packets and return a libnet.context object.
+	* All autobuild, write, and resolver functions can be accessed
+		via the libnet.context object using the following conventions:
+		+ omit the 'libnet_' prefix when calling any function
+		+ eliminate the 'libnet_t *l' param in the method call since
+			this is essentially provided by the libnet.context object
+	* Remember to inject responsibly
+
+Please let me know if we can improve this wrapper in any way. The
+documentation will come in the form of docstrings in the next
+release. Also, context queuing and chaining will be supported.
+
+Happy Injecting!

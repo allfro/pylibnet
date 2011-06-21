@@ -1,0 +1,32 @@
+pylibnet - Python module for the libnet packet injection library
+Copyright (C) 2009  Nadeem Douba
+
+To install this module you will need to install the following:
+	* libnet-1.1.x: to inject your packets.
+
+All these prerequisites can be installed using apt-get, port, or fink.
+Debian users can install the following packages to meet the pre-
+requisite requirements:
+	* build-essential
+	* libnet1-dev
+	* python-dev
+
+For Mac OS/X users, please use the libnet libraries that come from
+the Fink or MacPorts distribution. If you try to compile libnet in 
+Mac OS/X you will run into a bug that causes "pblock not found" errors.
+Mac OS/X users will have to install the following prerequisites 
+in MacPorts:
+  * libnet11
+	* python25 (this is essential since Mac OS/X Python only runs 
+              in 64-bit mode and the libnet lib is 32-bit only)
+
+After installing python25 use the following command to make the 
+MacPorts distro of Python active:
+
+sudo python_select python25
+
+Please let me know if we can improve this wrapper in any way. The
+documentation is embedded in the library and can be accessed via
+the help() function in the Python interpretter or pydoc.
+
+Happy Injecting!
