@@ -1,1 +1,1 @@
-include src/*.c src/*.h examples/*
+include examples/* src/* INSTALL LICENSE README COPYING
