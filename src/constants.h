@@ -18,29 +18,6 @@
  Nadeem Douba <ndouba at gmail dot com>
  348 Patricia Ave, Ottawa, ON, K1Z 6G6
  Canada
-
- Creation date: Friday, October 2 2009
- Revision:      $Revision: 1.5 $
- Checked in by: $Author: ndouba $
- Last modified: $Date: 2010/01/14 04:17:33 $
-
- $Log: constants.h,v $
- Revision 1.5  2010/01/14 04:17:33  ndouba
- kudos to Seija Ariga for sending in a patch to fix TCP options and injection types
-
- Revision 1.4  2009/12/27 14:40:51  ndouba
- Fixed the no payload bug
-
- Revision 1.3  2009/10/07 03:45:14  ndouba
- *** empty log message ***
-
- Revision 1.2  2009/10/04 06:55:06  ndouba
- Added parsers and more builders
-
- Revision 1.1  2009/10/02 07:49:25  ndouba
- Added constants
-
-
 */
 
 #define PTAG_INITIALIZER LIBNET_PTAG_INITIALIZER
