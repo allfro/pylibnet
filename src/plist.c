@@ -18,12 +18,6 @@
  Nadeem Douba <ndouba at gmail dot com>
  348 Patricia Ave, Ottawa, ON, K1Z 6G6
  Canada
-
- Creation date: Friday, October 1 2009
- Revision:      $Revision: 1.3 $
- Checked in by: $Author: ndouba $
- Last modified: $Date: 2010/01/20 02:33:08 $
-
 */
 
 #define PYLIBNET_CONTEXT "libnet.context"
