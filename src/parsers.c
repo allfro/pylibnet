@@ -18,12 +18,6 @@
  Nadeem Douba <ndouba at gmail dot com>
  348 Patricia Ave, Ottawa, ON, K1Z 6G6
  Canada
-
- Creation date: Sunday, October 4 2009
- Revision:      $Revision: 1.11 $
- Checked in by: $Author: ndouba $
- Last modified: $Date: 2010/06/05 04:20:25 $
-
 */
 
 #define PYLIBNET_POINT_HDR(x) struct x *hdr = (struct x *)buf
