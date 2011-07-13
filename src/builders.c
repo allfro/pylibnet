@@ -18,12 +18,6 @@
  Nadeem Douba <ndouba at gmail dot com>
  348 Patricia Ave, Ottawa, ON, K1Z 6G6
  Canada
-
- Creation date: Friday, October 1 2009
- Revision:      $Revision: 1.16 $
- Checked in by: $Author: ndouba $
- Last modified: $Date: 2010/10/29 21:24:58 $
-
 */
 
 #define PYLIBNET_HWA "hardware address"
@@ -59,17 +53,29 @@
 #define PYLIBNET_ERROUI1(x) PYLIBNET_ERROR_TYPE1(x##_len != 3, #x, PYLIBNET_OUI)
 #define PYLIBNET_ERROUI2(x, y) PYLIBNET_ERROR_TYPE1(x, y, PYLIBNET_OUI)
 
-#define AUTOSIZE(x) if (!len) len = pylibnet_auto_length(self->l)+x+payload_s
-#define AUTOSIZE1(x,y) if (!x) x = pylibnet_auto_length(self->l)+y+payload_s
+#define AUTOSIZE(x) if (!len) len = pylibnet_auto_length(self->l, ptag)+x+payload_s
+#define AUTOSIZE1(x,y) if (!x) x = pylibnet_auto_length(self->l, ptag)+y+payload_s
 
-#define AUTOSIZE_NOPAYLOAD(x) if (!len) len = pylibnet_auto_length(self->l)+x
+#define AUTOSIZE_NOPAYLOAD(x) if (!len) len = pylibnet_auto_length(self->l, ptag)+x
 
-static int pylibnet_auto_length(libnet_t *l) {
-	int len = 0;
+
+static int 
+pylibnet_auto_length(libnet_t *l, int ptag) {
+	
 	int i = 0;
-	for (i = l->ptag_state; i; i--)
-		len += libnet_getpbuf_size(l, i);
+	int len = 0;
+
+	if (ptag <= l->ptag_state && ptag >= 0) {
+
+		for (i = (ptag)?--ptag:l->ptag_state; i; i--) {
+			len += libnet_getpbuf_size(l, i);
+			printf("%d: %d\n", i, len);
+		}
+
+	}
+
 	return len;
+
 }
 
 static PyObject *
