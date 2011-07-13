@@ -65,14 +65,9 @@ pylibnet_auto_length(libnet_t *l, int ptag) {
 	int i = 0;
 	int len = 0;
 
-	if (ptag <= l->ptag_state && ptag >= 0) {
-
-		for (i = (ptag)?--ptag:l->ptag_state; i; i--) {
+	if (ptag <= l->ptag_state && ptag >= 0)
+		for (i = (ptag)?--ptag:l->ptag_state; i; i--)
 			len += libnet_getpbuf_size(l, i);
-			printf("%d: %d\n", i, len);
-		}
-
-	}
 
 	return len;
 
