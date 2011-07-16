@@ -93,6 +93,9 @@ class LibnetShell(InteractiveConsole):
 	def raw_input(self, prompt):
 		line = InteractiveConsole.raw_input(self, prompt="libnet> ")
 
+		if line.lower() == 'exit' or line.lower() == 'quit':
+			return 'exit()'
+
 		if line.lower() == 'help':
 			return 'help(libnet)'
 
