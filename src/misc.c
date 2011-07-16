@@ -137,7 +137,7 @@ static PyObject *
 context_getpacket(context *self, PyObject *args, PyObject *kwargs)
 {
 	
-	int i;
+	int ptag;
 	PyObject *l = NULL;
 	PyObject *o = NULL, *next_cycle = NULL;
 	libnet_pblock_t *pblock = NULL;
@@ -146,10 +146,11 @@ context_getpacket(context *self, PyObject *args, PyObject *kwargs)
 	if ((l = PyList_New(0)) == NULL)
 		return NULL;
 	
-	for (i = self->l->n_pblocks; i >= 1; i--) {
+	for (ptag = self->l->ptag_state; pblock != self->l->protocol_blocks; ptag--) {
 
-		o = pylibnet_getheader(self, i);
-		PYLIBNET_ERROR_LIBNET((pblock = libnet_pblock_find (self->l, i)) == NULL);
+		printf("%d\n", ptag);
+		o = pylibnet_getheader(self, ptag);
+		PYLIBNET_ERROR_LIBNET((pblock = libnet_pblock_find (self->l, ptag)) == NULL);
 
 		if (pblock->type == LIBNET_PBLOCK_IPDATA || pblock->type == LIBNET_PBLOCK_TCPDATA) {
 
@@ -342,7 +343,7 @@ context_addr2name4(context *self, PyObject *args, PyObject *kwargs)
 
 	char *inaddr = NULL;
 	int inaddr_len = 0;
-	u_int32_t use_name = 1;
+	u_int32_t use_name = LIBNET_RESOLVE;
 	char *name = NULL;
 
 	static char *kwlist[] = {"inaddr", "use_name", NULL};

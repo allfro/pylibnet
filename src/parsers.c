@@ -24,9 +24,9 @@
 #define PYLIBNET_KEYPAIR(x) #x, hdr->x
 #define PYLIBNET_KEYPAIR_HS(x) #x, ntohs(hdr->x)
 #define PYLIBNET_KEYPAIR_HL(x) #x, ntohl(hdr->x)
-#define PYLIBNET_KEYPAIR_INADDR4(x) #x, libnet_addr2name4(*((u_int32_t *)&hdr->x), LIBNET_RESOLVE)
-#define PYLIBNET_KEYPAIR_INADDR41(x) #x, libnet_addr2name4(x, LIBNET_RESOLVE)
-#define PYLIBNET_KEYPAIR_INADDR42(x, y) x, libnet_addr2name4(y, LIBNET_RESOLVE)
+#define PYLIBNET_KEYPAIR_INADDR4(x) #x, libnet_addr2name4(*((u_int32_t *)&hdr->x), LIBNET_DONT_RESOLVE)
+#define PYLIBNET_KEYPAIR_INADDR41(x) #x, libnet_addr2name4(x, LIBNET_DONT_RESOLVE)
+#define PYLIBNET_KEYPAIR_INADDR42(x, y) x, libnet_addr2name4(y, LIBNET_DONT_RESOLVE)
 #define PYLIBNET_KEYPAIR_INADDR6(x) #x, pylibnet_addr2name6(hdr->x)
 #define PYLIBNET_KEYPAIR_HWADDR(x) #x, pylibnet_hex_ntoa(hdr->x, 6)
 #define PYLIBNET_KEYPAIR_HWADDR1(x) #x, pylibnet_hex_ntoa(x, 6)
