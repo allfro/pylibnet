@@ -9,9 +9,8 @@ EXAMPLES
 
 The following examples require pylibnet, libnet and root 
 access in order for them to work. The newest addition to
-the examples directory is the lnsh. It is an
-interactive pylibnet console that provides a lot of 
-shortcuts. 
+the examples directory is 'lnsh'. It is an interactive 
+pylibnet console that provides a lot of shortcuts. 
 
 Take a look at the example scripts in the lnsh directory. 
 You can use this interpretter in interactive as well as 
@@ -38,9 +37,16 @@ scripted mode. A few things to note:
 
 - Finally, the injection and device parameters for the context
   is specified at runtime. No need to build it within the
-  script itself. In script mode you will need to modify
-  the she-bang (#!) line to specify the appropriate settings.
-  In interactive mode just run lnsh with -h for help.
+  script itself. In script mode you will need to either modify
+  the she-bang (#!) line to specify the appropriate settings or
+  specify them at runtime. For example, 'tcpsyn.libnet' can be 
+  run using the '-i' parameter ('./tcpsyn.libnet -i eth1') or 
+  without the '-i' parameter ('./tcpsyn.libnet') because of the
+  she-bang ('#!./lnsh -i eth0 -t RAW4'). In interactive mode 
+  just run lnsh with -h for help.
+
+Hope you will enjoy using lnsh as I thoroughly enjoyed coding 
+it (yes... I have no life).
 
 
 YOUR CONTRIBUTIONS
