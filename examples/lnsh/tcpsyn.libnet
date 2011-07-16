@@ -1,0 +1,17 @@
+#!./lnsh -i eth0 -t RAW4
+
+print 'Building TCP header:'
+tcp_ptag = tcp(dp=80, control=TH_SYN)
+print header(tcp_ptag)
+
+print 'Building IPv4 header:'
+ipv4_ptag = ipv4(dst=name2addr4('www.google.ca', RESOLVE), prot=IPPROTO_TCP)
+print header(ipv4_ptag)
+
+print 'Sending packet:'
+print packet()
+write()
+
+
+print 'Statistics:'
+print stats()

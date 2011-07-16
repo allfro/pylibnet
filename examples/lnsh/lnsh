@@ -20,8 +20,6 @@
 # 348 Patricia Ave, Ottawa, ON, K1Z 6G6
 # Canada
 
-import getopt
-
 import sys
 
 from code import InteractiveConsole
@@ -32,53 +30,30 @@ from libnet.constants import *
 import rlcompleter
 import readline
 
-
-def usage():
-	print "\nUsage: %s -i <device> [-t <type>]" % sys.argv[0]
-	print "\nOptions:\n"
-	print "  -i <device>  -  Where <device> is the interface's device name (e.g. 'eth0') that will be used to inject packets"
-	print "  -t <type>    -  Where <type> is the injection type (default: RAW). Can be one of the following:"
-	print "                  LINK, LINK_ADV, RAW4, RAW4_ADV, RAW6, or RAW6_ADV.\n"
-
-
+import argparse
 
 def parseargs(argv):
-	try:
-		opts, args = getopt.getopt(argv, "hi:t:", ["device=", "type="])
-	except getopt.GetoptError as err:
-		# print help information and exit:
-		print(err) # will print something like "option -a not recognized"
-		usage()
-		sys.exit(2)
 
-	device = None
-	injection_type = RAW4
+	tmp = []
 
-	for o, a in opts:
-		if o in ("-i", "--device"):
-			device = a
-		elif o in ("-h", "--help"):
-			usage()
-			sys.exit()
-		elif o in ("-t", "--type"):
-			if a.upper() in ("LINK", "LINK_ADV", "RAW4", "RAW4_ADV", "RAW6", "RAW6_ADV"):
-				injection_type = locals()[a.upper()]
-			else:
-				print "Invalid injection type: %s" % a.upper()
-				usage()
-				sys.exit(2)
+	for i in argv:
+		tmp.extend(i.split(' '))
 
-	if device is None:
-		print "You must specify an interface."
-		usage()
-		sys.exit()
+	parser = argparse.ArgumentParser(description='Interactive Libnet Interpretter - Copyright (C) 2011 Nadeem Douba under GNU GPL.')
+	parser.add_argument('script', metavar='script', type=str, nargs='?', help='a libneterpretter script (e.g. script.libnet).', default=None)
+	parser.add_argument('-i', metavar='<device>', required=True, help='the packet injection interface (e.g. eth0).', default=None)
+	parser.add_argument('-t', metavar='<injection_type>', help='the injection type. Can be either RAW4, RAW4_ADV, RAW6, RAW6_ADV, LINK, or LINK_ADV', default='RAW4', choices=('RAW4', 'RAW4_ADV', 'RAW6', 'RAW6_ADV', 'LINK', 'LINK_ADV'))
+	args = parser.parse_args(tmp)
 
-	return device, injection_type
-
+	return args.i, args.t, args.script
+	
 
 def main(argv, locals=None):
 
-	device, injection_type = parseargs(argv)
+	device, injection_type, script = parseargs(argv)
+	
+	# evaluate injection type name to integer
+	injection_type = eval(injection_type)
 
 	# Setup readline for easy function reference
 	readline.parse_and_bind("tab: complete")
@@ -103,8 +78,12 @@ def main(argv, locals=None):
 		if i.startswith('__') == False:
 			locals[i] = eval('c.%s' % i)
 
-	c = LibnetShell(locals=locals)
-	c.interact(banner='Welcome to the libnet interactive console.\nCopyright (C) 2011 Nadeem Douba under GNU GPL\n')
+	shell = LibnetShell(locals=locals)
+
+	if script:
+		shell.runsource(file(script).read(), symbol='exec')
+	else:
+		shell.interact(banner='Welcome to the libnet interactive console.\nCopyright (C) 2011 Nadeem Douba under GNU GPL\n')
 
 class LibnetShell(InteractiveConsole):
 
