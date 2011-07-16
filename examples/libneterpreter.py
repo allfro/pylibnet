@@ -90,8 +90,6 @@ def main(argv, locals=None):
 		print(err)
 		sys.exit(-1)
 
-	sys.ps1 = 'libnet> '
-	
 	# Create some easy aliases for everything
 	for i in dir(c):
 		if i.startswith('build_'):
@@ -105,9 +103,33 @@ def main(argv, locals=None):
 		if i.startswith('__') == False:
 			locals[i] = eval('c.%s' % i)
 
-	# Spawn the libnet shell
-	c = InteractiveConsole(locals=locals)
-	c.interact(banner='Welcome to the libnet interactive console.\nAuthor: Nadeem Douba\n')
+	c = LibnetShell(locals=locals)
+	c.interact(banner='Welcome to the libnet interactive console.\nCopyright (C) 2011 Nadeem Douba under GNU GPL\n')
+
+class LibnetShell(InteractiveConsole):
+
+	def __init__(self, locals=None):
+		InteractiveConsole.__init__(self, locals=locals)
+
+	def raw_input(self, prompt):
+		line = InteractiveConsole.raw_input(self, prompt="libnet> ")
+
+		if line.lower() == 'help':
+			return 'help(libnet)'
+
+		if line.lower() == 'diag':
+			self.push('print "\\nLibnet Context State:\\n------------------------"')
+			self.push('dump_context()')
+			self.push('print "\\nPacket Stats:\\n------------------------"')
+			self.push('stats()')
+			self.push('print "\\nCurrent Packet (decoded):\\n------------------------"')
+			self.push('print packet()')
+			return 'print'
+
+		if self.locals.has_key(line) and hasattr(self.locals[line], '__call__'):
+			return '%s()' % line
+
+		return line
 
 if __name__ == '__main__':
 

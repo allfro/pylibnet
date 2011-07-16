@@ -148,7 +148,6 @@ context_getpacket(context *self, PyObject *args, PyObject *kwargs)
 	
 	for (ptag = self->l->ptag_state; pblock != self->l->protocol_blocks; ptag--) {
 
-		printf("%d\n", ptag);
 		o = pylibnet_getheader(self, ptag);
 		PYLIBNET_ERROR_LIBNET((pblock = libnet_pblock_find (self->l, ptag)) == NULL);
 
