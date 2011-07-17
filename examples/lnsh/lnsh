@@ -25,6 +25,7 @@ import sys
 from code import InteractiveConsole
 
 import libnet
+from libnet import *
 from libnet.constants import *
 
 import rlcompleter
@@ -60,8 +61,8 @@ def main(argv, locals=None):
 
 	# Initialize libnet context
 	try:
-		c = libnet.context(device=device, injection_type=injection_type)
-	except libnet.error as err:
+		c = context(device=device, injection_type=injection_type)
+	except error as err:
 		print(err)
 		sys.exit(-1)
 

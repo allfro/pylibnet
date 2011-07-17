@@ -53,7 +53,7 @@ plist_init(plist *self, PyObject *args, PyObject *kwargs)
 	}
 
 	while((errnum = libnet_plist_chain_next_pair(pl, &bport, &eport)) == 1) {
-		if (PyList_Append((PyObject *)self, Py_BuildValue("(i,i)", bport, eport)) == -1) {
+		if (PyList_Append((PyObject *)self, Py_BuildValue("(I,I)", bport, eport)) == -1) {
 			errnum = -1;
 			goto fail;
 		}
@@ -67,6 +67,56 @@ fail:
 	return (errnum >= 0)?0:-1;
 
 }
+
+static PyObject *
+plist_fulllist (PyObject *self) {
+
+	int i, p, upper, lower;
+	Py_ssize_t size = 0;
+
+	PyObject *list = NULL;
+	PyObject *tuple = NULL;
+
+	if ((size = PyList_Size(self)) == 0) 
+		return Py_BuildValue("[]");
+
+	if ((list = PyList_New(0)) == NULL)
+		return NULL;
+	
+	for (i = 0; i < size; i++) {
+
+		if ((tuple = PyList_GetItem(self, i)) == NULL)
+			return NULL;
+		if (!PyArg_ParseTuple(tuple, "II", &lower, &upper))
+			return NULL;
+		else 
+			for (p = lower; p <= upper; p++) 
+				if (PyList_Append(list, Py_BuildValue("I", p)) == -1)
+					return NULL;
+
+	}
+		
+
+	return list;
+
+}
+
+static PyObject *
+plist_fullset (PyObject *self) {
+
+	return PySet_New(plist_fulllist(self));
+
+}
+
+static PyMethodDef plist_methods[] = {
+	{
+		"fulllist", (PyCFunction)plist_fulllist, METH_NOARGS, "Creates and returns the full list of ports as a list."
+	},
+	{
+		"fullset", (PyCFunction)plist_fullset, METH_NOARGS, "Creates and returns the full list of ports as a set."
+	},
+	{ NULL }
+};
 
 PyDoc_STRVAR(plist_doc,
 	"plist(token_list)\n\nCreates a new port list. Port list chains are useful for TCP and UDP-based applications that need to\n"
@@ -105,7 +155,7 @@ static PyTypeObject plist_Type = {
 		0,		               /* tp_weaklistoffset */
 		0,		               /* tp_iter */
 		0,		               /* tp_iternext */
-		0,             /* tp_methods */
+		plist_methods,             /* tp_methods */
 		0,             /* tp_members */
 		0,                         /* tp_getset */
 		0,                         /* tp_base */
