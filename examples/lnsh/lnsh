@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+#
 # Nadeem Douba <ndouba at gmail dot com>
 # 348 Patricia Ave, Ottawa, ON, K1Z 6G6
 # Canada
@@ -35,24 +35,42 @@ import argparse
 
 def parseargs(argv):
 
-	tmp = []
+	args = []
+	args_l = [] 
+	args_r = []
+	
 
 	for i in argv:
-		tmp.extend(i.split(' '))
+		args.extend(i.split(' '))
+	
+	i = 0
 
-	parser = argparse.ArgumentParser(description='Interactive Libnet Interpretter - Copyright (C) 2011 Nadeem Douba under GNU GPL.')
-	parser.add_argument('script', metavar='script', type=str, nargs='?', help='a libneterpretter script (e.g. script.libnet).', default=None)
-	parser.add_argument('-i', metavar='<device>', required=True, help='the packet injection interface (e.g. eth0).', default=None)
-	parser.add_argument('-t', metavar='<injection_type>', help='the injection type. Can be either RAW4, RAW4_ADV, RAW6, RAW6_ADV, LINK, or LINK_ADV', default='RAW4', choices=('RAW4', 'RAW4_ADV', 'RAW6', 'RAW6_ADV', 'LINK', 'LINK_ADV'))
-	args = parser.parse_args(tmp)
+	while i < len(args):
+		if args[i] == '-i' or args[i] == '-t':
+			args_l.append(args[i])
+			args_l.append(args[i+1])
+			i+=1
+		else:
+			args_r.append(args[i])
+		i+=1
+	
+	args_l.extend(args_r)
 
-	return args.i, args.t, args.script
+	parent = argparse.ArgumentParser(description='Interactive Libnet Interpretter - Copyright (C) 2011 Nadeem Douba under GNU GPL.', conflict_handler='resolve')
+	parent.add_argument('scriptargv', metavar='argN', type=str, nargs='+', help='libneterpretter script arguments.', default=None)
+	parent.add_argument('-i', metavar='<device>', required=True, help='the packet injection interface (e.g. eth0).', default=None)
+	parent.add_argument('-t', metavar='<injection_type>', help='the injection type. Can be either RAW4, RAW4_ADV, RAW6, RAW6_ADV, LINK, or LINK_ADV', default='RAW4', choices=('RAW4', 'RAW4_ADV', 'RAW6', 'RAW6_ADV', 'LINK', 'LINK_ADV'))
+	args = parent.parse_args(args_l)
+
+	return args.i, args.t, args.scriptargv
 	
 
 def main(argv, locals=None):
 
-	device, injection_type, script = parseargs(argv)
+	device, injection_type, sys.argv = parseargs(argv)
 	
+	script = sys.argv[0]
+
 	# evaluate injection type name to integer
 	injection_type = eval(injection_type)
 

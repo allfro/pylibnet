@@ -69,11 +69,11 @@ PyObject *pylibnet_hex_ntoa(u_int8_t *buf, int len) {
 }
 
 static PyObject *
-pylibnet_parse_reserved(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_reserved(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 { Py_INCREF(Py_None); return Py_None; }
 
 static PyObject *
-pylibnet_parse_arp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_arp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_arp_hdr);
 
@@ -82,7 +82,7 @@ pylibnet_parse_arp_h(u_int8_t *buf, u_int32_t len)
 	u_int8_t *tha = ((u_int8_t *)spa + sizeof(u_int32_t));
 	u_int32_t *tpa = (u_int32_t *)(tha + sizeof(struct libnet_ether_addr));
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:S,s:s,s:S,s:s}",
+	return Py_BuildValue("{s:H,s:H,s:B,s:B,s:H,s:S,s:s,s:S,s:s}",
 		PYLIBNET_KEYPAIR_HS(ar_hrd),
 		PYLIBNET_KEYPAIR_HS(ar_pro),
 		PYLIBNET_KEYPAIR(ar_hln),
@@ -95,11 +95,11 @@ pylibnet_parse_arp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_dhcpv4_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_dhcpv4_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_dhcpv4_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:s,s:s,s:s,s:s,s:S,s:s,s:s,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:B,s:I,s:H,s:H,s:s,s:s,s:s,s:s,s:S,s:s,s:s,s:I}",
 		PYLIBNET_KEYPAIR(dhcp_opcode),
 		PYLIBNET_KEYPAIR(dhcp_htype),
 		PYLIBNET_KEYPAIR(dhcp_hlen),
@@ -118,11 +118,24 @@ pylibnet_parse_dhcpv4_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_dnsv4_h(u_int8_t *buf, u_int32_t len)
-{
+pylibnet_parse_dnsv4_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len) {
+
+	if (h_len == LIBNET_UDP_DNSV4_H) {
+
+		PYLIBNET_POINT_HDR(libnet_dnsv4udp_hdr);
+
+		return Py_BuildValue("{s:H,s:H,s:H,s:H,s:H,s:H}",
+			PYLIBNET_KEYPAIR_HS(id),
+			PYLIBNET_KEYPAIR_HS(flags),
+			PYLIBNET_KEYPAIR_HS(num_q),
+			PYLIBNET_KEYPAIR_HS(num_answ_rr),
+			PYLIBNET_KEYPAIR_HS(num_auth_rr),
+			PYLIBNET_KEYPAIR_HS(num_addi_rr));
+	}
+
 	PYLIBNET_POINT_HDR(libnet_dnsv4_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:H,s:H,s:H,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR_HS(h_len),
 		PYLIBNET_KEYPAIR_HS(id),
 		PYLIBNET_KEYPAIR_HS(flags),
@@ -130,25 +143,26 @@ pylibnet_parse_dnsv4_h(u_int8_t *buf, u_int32_t len)
 		PYLIBNET_KEYPAIR_HS(num_answ_rr),
 		PYLIBNET_KEYPAIR_HS(num_auth_rr),
 		PYLIBNET_KEYPAIR_HS(num_addi_rr));
+
 }
 
 static PyObject *
-pylibnet_parse_eth_h(u_int8_t *buf, u_int32_t len) 
+pylibnet_parse_eth_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len) 
 {
 	PYLIBNET_POINT_HDR(libnet_ethernet_hdr);
 
-	return Py_BuildValue("{s:S,s:S,s:i}",
+	return Py_BuildValue("{s:S,s:S,s:H}",
 		PYLIBNET_KEYPAIR_HWADDR(ether_dhost),
 		PYLIBNET_KEYPAIR_HWADDR(ether_shost),
 		PYLIBNET_KEYPAIR_HS(ether_type));
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_echo_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_echo_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum),
@@ -157,11 +171,11 @@ pylibnet_parse_icmpv4_echo_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_mask_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_mask_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:s}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H,s:s}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum),
@@ -171,14 +185,14 @@ pylibnet_parse_icmpv4_mask_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_unreach_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_unreach_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
 
 #define icmp_pad hun.frag.pad
 #define icmp_mtu hun.frag.mtu 
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum),
@@ -187,11 +201,11 @@ pylibnet_parse_icmpv4_unreach_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_timxceed_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_timxceed_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum),
@@ -200,13 +214,13 @@ pylibnet_parse_icmpv4_timxceed_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_redirect_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_redirect_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
 
 #define icmp_gateway hun.gateway
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:s}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:s}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum),
@@ -214,11 +228,11 @@ pylibnet_parse_icmpv4_redirect_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_ts_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_ts_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H,s:I}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum),
@@ -228,7 +242,7 @@ pylibnet_parse_icmpv4_ts_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_icmpv4_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_icmpv4_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	
 	PYLIBNET_POINT_HDR(libnet_icmpv4_hdr);
@@ -236,20 +250,20 @@ pylibnet_parse_icmpv4_h(u_int8_t *buf, u_int32_t len)
 	switch (hdr->icmp_type) {
 		case ICMP_TSTAMP:
 		case ICMP_TSTAMPREPLY:
-			return pylibnet_parse_icmpv4_ts_h(buf, len);
+			return pylibnet_parse_icmpv4_ts_h(buf, h_len, b_len);
 		case ICMP_MASKREQ:
 		case ICMP_MASKREPLY:
-			return pylibnet_parse_icmpv4_mask_h(buf, len);
+			return pylibnet_parse_icmpv4_mask_h(buf, h_len, b_len);
 		case ICMP_UNREACH:
-			return pylibnet_parse_icmpv4_unreach_h(buf, len);
+			return pylibnet_parse_icmpv4_unreach_h(buf, h_len, b_len);
 		case ICMP_TIMXCEED:
-			return pylibnet_parse_icmpv4_timxceed_h(buf, len);
+			return pylibnet_parse_icmpv4_timxceed_h(buf, h_len, b_len);
 		case ICMP_REDIRECT:
-			return pylibnet_parse_icmpv4_redirect_h(buf, len);
+			return pylibnet_parse_icmpv4_redirect_h(buf, h_len, b_len);
 		case ICMP_IREQ:
 		case ICMP_ECHOREPLY:
 		case ICMP_ECHO:
-			return pylibnet_parse_icmpv4_echo_h(buf, len);
+			return pylibnet_parse_icmpv4_echo_h(buf, h_len, b_len);
 		case ICMP_SOURCEQUENCH:
 		case ICMP_ROUTERADVERT:
 		case ICMP_ROUTERSOLICIT:
@@ -258,7 +272,7 @@ pylibnet_parse_icmpv4_h(u_int8_t *buf, u_int32_t len)
 			break;
 	}
 
-	return Py_BuildValue("{s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H}",
 		PYLIBNET_KEYPAIR(icmp_type),
 		PYLIBNET_KEYPAIR(icmp_code),
 		PYLIBNET_KEYPAIR_HS(icmp_sum));
@@ -266,10 +280,10 @@ pylibnet_parse_icmpv4_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_igmp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_igmp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_igmp_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:s}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:s}",
 		PYLIBNET_KEYPAIR(igmp_type),
 		PYLIBNET_KEYPAIR(igmp_code),
 		PYLIBNET_KEYPAIR_HS(igmp_sum),
@@ -277,10 +291,10 @@ pylibnet_parse_igmp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ipv4_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipv4_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ipv4_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:s,s:s}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:H,s:H,s:H,s:B,s:B,s:H,s:s,s:s}",
 			PYLIBNET_KEYPAIR(ip_hl), 
 			PYLIBNET_KEYPAIR(ip_v), 
 			PYLIBNET_KEYPAIR(ip_tos), 
@@ -295,31 +309,31 @@ pylibnet_parse_ipv4_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ipo_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipo_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
-	return (len > 1)?Py_BuildValue("{s:i,s:i,s:i,s:s#}",
+	return (b_len > 1)?Py_BuildValue("{s:B,s:B,s:B,s:s#}",
 		"ipo_copy", buf[0] >> 7,
 		"ipo_class", (buf[0] >> 5) & 3,
 		"ipo_option", buf[0] & 0x1F,
-		"ipo_data", buf+1, len-1)
-		:Py_BuildValue("{s:i,s:i,s:i}",
+		"ipo_data", buf+1, b_len-1)
+		:Py_BuildValue("{s:B,s:B,s:B}",
 		"ipo_copy", buf[0] >> 7,
 		"ipo_class", (buf[0] >> 5) & 3,
 		"ipo_option", buf[0] & 0x1F);
 }
 
 static PyObject *
-pylibnet_parse_ipdata(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipdata(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
-	return Py_BuildValue("{s:s#}", "ipdata", buf, len);
+	return Py_BuildValue("{s:s#}", "ipdata", buf, b_len);
 }
 
 static PyObject *
-pylibnet_parse_ospf_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ospf_hdr);
 	
-	return Py_BuildValue("{s:i,s:i,s:i,s:s,s:s,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:s,s:s,s:H,s:H}",
 			PYLIBNET_KEYPAIR(ospf_v),
 			PYLIBNET_KEYPAIR(ospf_type),
 			PYLIBNET_KEYPAIR_HS(ospf_len),
@@ -329,11 +343,11 @@ pylibnet_parse_ospf_h(u_int8_t *buf, u_int32_t len)
 			PYLIBNET_KEYPAIR_HS(ospf_auth_type));
 }
 static PyObject *
-pylibnet_parse_ospf_hello_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_hello_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ospf_hello_hdr);
 	
-	return Py_BuildValue("{s:s,s:i,s:i,s:i,s:i,s:s,s:s,s:s}",
+	return Py_BuildValue("{s:s,s:H,s:B,s:B,s:I,s:s,s:s,s:s}",
 			PYLIBNET_KEYPAIR_INADDR4(hello_nmask),
 			PYLIBNET_KEYPAIR_HS(hello_intrvl),
 			PYLIBNET_KEYPAIR(hello_opts),
@@ -345,11 +359,11 @@ pylibnet_parse_ospf_hello_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ospf_dbd_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_dbd_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_dbd_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:B,s:B,s:I}",
 			PYLIBNET_KEYPAIR_HS(dbd_mtu_len),
 			PYLIBNET_KEYPAIR(dbd_opts),
 			PYLIBNET_KEYPAIR(dbd_type),
@@ -357,28 +371,28 @@ pylibnet_parse_ospf_dbd_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ospf_lsr_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_lsr_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_lsr_hdr);
-	return Py_BuildValue("{s:i,s:i,s:s}",
+	return Py_BuildValue("{s:I,s:I,s:s}",
 			PYLIBNET_KEYPAIR_HL(lsr_type),
 			PYLIBNET_KEYPAIR_HL(lsr_lsid),
 			PYLIBNET_KEYPAIR_INADDR4(lsr_adrtr));
 }
 
 static PyObject *
-pylibnet_parse_ospf_lsu_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_lsu_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_lsu_hdr);
-	return Py_BuildValue("{s:i}",
+	return Py_BuildValue("{s:I}",
 			PYLIBNET_KEYPAIR_HL(lsu_num));
 }
 
 static PyObject *
-pylibnet_parse_ospf_lsa_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_lsa_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_lsa_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:s,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:B,s:B,s:I,s:s,s:I,s:H,s:H}",
 			PYLIBNET_KEYPAIR_HS(lsa_age),
 			PYLIBNET_KEYPAIR(lsa_opts),
 			PYLIBNET_KEYPAIR(lsa_type),
@@ -390,10 +404,10 @@ pylibnet_parse_ospf_lsa_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ospf_auth_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_auth_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_auth_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:B,s:B,s:I}",
 			PYLIBNET_KEYPAIR_HS(ospf_auth_null),
 			PYLIBNET_KEYPAIR(ospf_auth_keyid),
 			PYLIBNET_KEYPAIR(ospf_auth_len),
@@ -401,14 +415,14 @@ pylibnet_parse_ospf_auth_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ospf_cksum(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ospf_cksum(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 { PyErr_SetString(PyErr_LibnetError, "Packet parser not yet implemented."); return NULL; }
 
 	static PyObject *
-pylibnet_parse_ls_rtr_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ls_rtr_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_rtr_lsa_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:H,s:I,s:I,s:B,s:B,s:B}",
 			PYLIBNET_KEYPAIR_HS(rtr_flags),
 			PYLIBNET_KEYPAIR_HS(rtr_num),
 			PYLIBNET_KEYPAIR_HL(rtr_link_id),
@@ -419,29 +433,29 @@ pylibnet_parse_ls_rtr_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ls_net_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ls_net_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_net_lsa_hdr);
-	return Py_BuildValue("{s:s,s:i}",
+	return Py_BuildValue("{s:s,s:I}",
 			PYLIBNET_KEYPAIR_INADDR4(net_nmask),
 			PYLIBNET_KEYPAIR_HL(net_rtr_id));
 }
 
 static PyObject *
-pylibnet_parse_ls_sum_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ls_sum_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_sum_lsa_hdr);
-	return Py_BuildValue("{s:s,s:i,s:i}",
+	return Py_BuildValue("{s:s,s:I,s:I}",
 			PYLIBNET_KEYPAIR_INADDR4(sum_nmask),
 			PYLIBNET_KEYPAIR_HL(sum_metric),
 			PYLIBNET_KEYPAIR_HL(sum_tos_metric));
 }
 
 static PyObject *
-pylibnet_parse_ls_as_ext_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ls_as_ext_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_as_lsa_hdr);
-	return Py_BuildValue("{s:s,s:i,s:s,s:i}",
+	return Py_BuildValue("{s:s,s:I,s:s,s:I}",
 		PYLIBNET_KEYPAIR_INADDR4(as_nmask),
 		PYLIBNET_KEYPAIR_HL(as_metric),
 		PYLIBNET_KEYPAIR_INADDR4(as_fwd_addr),
@@ -449,7 +463,7 @@ pylibnet_parse_ls_as_ext_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ntp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ntp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ntp_hdr);
 
@@ -463,7 +477,7 @@ pylibnet_parse_ntp_h(u_int8_t *buf, u_int32_t len)
 	double ntp_rec_ts = TS_TO_HD(ntp_rec_ts);
 	double ntp_xmt_ts = TS_TO_HD(ntp_xmt_ts);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:f,s:f,s:d,s:d,s:d,s:d,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:B,s:f,s:f,s:d,s:d,s:d,s:d,s:I}",
 		PYLIBNET_KEYPAIR(ntp_li_vn_mode),
 		PYLIBNET_KEYPAIR(ntp_stratum),
 		PYLIBNET_KEYPAIR(ntp_poll),
@@ -478,11 +492,11 @@ pylibnet_parse_ntp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_rip_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_rip_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_rip_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:s,s:s,s:s,s:s}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H,s:s,s:s,s:s,s:s}",
 		PYLIBNET_KEYPAIR(rip_cmd),
 		PYLIBNET_KEYPAIR(rip_ver),
 		PYLIBNET_KEYPAIR_HS(rip_rd),
@@ -495,10 +509,10 @@ pylibnet_parse_rip_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_tcp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_tcp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_tcp_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i}", 
+	return Py_BuildValue("{s:H,s:H,s:I,s:I,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:H,s:H,s:H}", 
 		PYLIBNET_KEYPAIR_HS(th_sport), 
 		PYLIBNET_KEYPAIR_HS(th_dport), 
 		PYLIBNET_KEYPAIR_HL(th_seq), 
@@ -510,7 +524,7 @@ pylibnet_parse_tcp_h(u_int8_t *buf, u_int32_t len)
 		"th_rst", (hdr->th_flags & TH_RST) >> 2, 
 		"th_push", (hdr->th_flags & TH_PUSH) >> 3,
 		"th_ack", (hdr->th_flags & TH_ACK) >> 4, 
-		"th_flags", (hdr->th_flags & TH_URG) >> 5,
+		"th_urg", (hdr->th_flags & TH_URG) >> 5,
 		"th_ece", (hdr->th_flags & TH_ECE) >> 6, 
 		"th_cwr", (hdr->th_flags & TH_CWR) >> 7,
 		PYLIBNET_KEYPAIR_HS(th_win), 
@@ -519,20 +533,20 @@ pylibnet_parse_tcp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_tcpo_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_tcpo_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 { PyErr_SetString(PyErr_LibnetError, "Packet parser not yet implemented."); return NULL; }
 
 static PyObject *
-pylibnet_parse_tcpdata(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_tcpdata(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
-	return Py_BuildValue("{s:s#}", "tcpdata", buf, len);
+	return Py_BuildValue("{s:s#}", "tcpdata", buf, b_len);
 }
 
 static PyObject *
-pylibnet_parse_udp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_udp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_udp_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR_HS(uh_sport),
 		PYLIBNET_KEYPAIR_HS(uh_dport),
 		PYLIBNET_KEYPAIR_HS(uh_ulen),
@@ -541,11 +555,11 @@ pylibnet_parse_udp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_vrrp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_vrrp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_vrrp_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:H}",
 		PYLIBNET_KEYPAIR(vrrp_v),
 		PYLIBNET_KEYPAIR(vrrp_t),
 		PYLIBNET_KEYPAIR(vrrp_vrouter_id),
@@ -557,16 +571,16 @@ pylibnet_parse_vrrp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_data_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_data_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
-	return Py_BuildValue("{s:s#}", "data", buf, len);
+	return Py_BuildValue("{s:s#}", "data", buf, b_len);
 }
 
 static PyObject *
-pylibnet_parse_cdp_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_cdp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_cdp_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR(cdp_version),
 		PYLIBNET_KEYPAIR(cdp_ttl),
 		PYLIBNET_KEYPAIR_HS(cdp_sum),
@@ -575,30 +589,30 @@ pylibnet_parse_cdp_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ipsec_esp_hdr_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipsec_esp_hdr_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_esp_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i}",
+	return Py_BuildValue("{s:I,s:I,s:I}",
 		PYLIBNET_KEYPAIR_HL(esp_spi),
 		PYLIBNET_KEYPAIR_HL(esp_seq),
 		PYLIBNET_KEYPAIR_HL(esp_iv));
 }
 
 static PyObject *
-pylibnet_parse_ipsec_esp_ftr_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipsec_esp_ftr_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_esp_ftr);
-	return Py_BuildValue("{s:i,s:i,s:s}",
+	return Py_BuildValue("{s:B,s:B,s:s}",
 		PYLIBNET_KEYPAIR(esp_pad_len),
 		PYLIBNET_KEYPAIR(esp_nh),
 		PYLIBNET_KEYPAIR(esp_auth));
 }
 
 static PyObject *
-pylibnet_parse_ipsec_ah_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipsec_ah_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ah_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:I,s:I,s:I}",
 		PYLIBNET_KEYPAIR(ah_nh),
 		PYLIBNET_KEYPAIR(ah_len),
 		PYLIBNET_KEYPAIR_HS(ah_res),
@@ -609,10 +623,10 @@ pylibnet_parse_ipsec_ah_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_802_1q_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_802_1q_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_802_1q_hdr);
-	return Py_BuildValue("{s:S,s:S,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:S,s:S,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR_HWADDR(vlan_dhost),
 		PYLIBNET_KEYPAIR_HWADDR(vlan_shost),
 		PYLIBNET_KEYPAIR_HS(vlan_tpi),
@@ -621,20 +635,20 @@ pylibnet_parse_802_1q_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_802_2_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_802_2_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_802_2_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B}",
 		PYLIBNET_KEYPAIR(llc_dsap),
 		PYLIBNET_KEYPAIR(llc_ssap),
 		PYLIBNET_KEYPAIR(llc_control));
 }
 
 static PyObject *
-pylibnet_parse_802_2snap_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_802_2snap_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_802_2snap_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:S,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:S,s:H}",
 		PYLIBNET_KEYPAIR(snap_dsap),
 		PYLIBNET_KEYPAIR(snap_ssap),
 		PYLIBNET_KEYPAIR(snap_control),
@@ -643,20 +657,20 @@ pylibnet_parse_802_2snap_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_802_3_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_802_3_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_802_3_hdr);
-	return Py_BuildValue("{s:S,s:S,s:i}",
+	return Py_BuildValue("{s:S,s:S,s:H}",
 		PYLIBNET_KEYPAIR_HWADDR(_802_3_dhost),
 		PYLIBNET_KEYPAIR_HWADDR(_802_3_shost),
 		PYLIBNET_KEYPAIR_HS(_802_3_len));
 }
 
 static PyObject *
-pylibnet_parse_stp_conf_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_stp_conf_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_stp_conf_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:S,s:i,s:S,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:B,s:B,s:B,s:S,s:I,s:S,s:H,s:H,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR_HS(stp_id),
 		PYLIBNET_KEYPAIR(stp_version),
 		PYLIBNET_KEYPAIR(stp_bpdu_type),
@@ -673,20 +687,20 @@ pylibnet_parse_stp_conf_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_stp_tcn_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_stp_tcn_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_stp_tcn_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i}",
+	return Py_BuildValue("{s:H,s:B,s:B}",
 		PYLIBNET_KEYPAIR_HS(stp_id),
 		PYLIBNET_KEYPAIR(stp_version),
 		PYLIBNET_KEYPAIR(stp_bpdu_type));
 }
 
 static PyObject *
-pylibnet_parse_isl_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_isl_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_isl_hdr);
-	return Py_BuildValue("{s:S,s:i,s:i,s:S,s:i,s:S,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:S,s:B,s:B,s:S,s:H,s:S,s:H,s:H,s:H}",
 		PYLIBNET_KEYPAIR_HEX(isl_dhost, 5),
 		PYLIBNET_KEYPAIR(isl_user),
 		PYLIBNET_KEYPAIR(isl_type),
@@ -699,11 +713,11 @@ pylibnet_parse_isl_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ipv6_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipv6_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ipv6_hdr);
 	u_int32_t ip_flags = ntohl(*((u_int32_t *)hdr->ip_flags));
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:S,s:S}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:H,s:B,s:B,s:S,s:S}",
 		"ip_ver", (ip_flags >> 28) & 0xf,
 		"ip_tc", (ip_flags >> 20) & 0xff,
 		"ip_fl", ip_flags & 0xfffff,
@@ -716,17 +730,17 @@ pylibnet_parse_ipv6_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_802_1x_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_802_1x_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_802_1x_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B}",
 		PYLIBNET_KEYPAIR(dot1x_version),
 		PYLIBNET_KEYPAIR(dot1x_type),
 		PYLIBNET_KEYPAIR(dot1x_length));
 }
 
 static PyObject *
-pylibnet_parse_rpc_call_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_rpc_call_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 
 	PYLIBNET_POINT_HDR(libnet_rpc_call_tcp_hdr);
@@ -742,7 +756,7 @@ pylibnet_parse_rpc_call_h(u_int8_t *buf, u_int32_t len)
 #define rpc_vers rpc_common.rpc_call.rpc_vers
 #define rpc_procedure rpc_common.rpc_call.rpc_procedure
 	
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:I,s:I,s:I,s:I,s:I,s:I,s:I,s:I,s:I,s:I,s:I}",
 		PYLIBNET_KEYPAIR_HL(rpc_record_marking),
 		PYLIBNET_KEYPAIR_HL(rpc_xid),
 		PYLIBNET_KEYPAIR_HL(rpc_type),
@@ -757,19 +771,19 @@ pylibnet_parse_rpc_call_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_mpls_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_mpls_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_mpls_hdr);
-	return Py_BuildValue("{s:i}",
+	return Py_BuildValue("{s:I}",
 		PYLIBNET_KEYPAIR_HL(mpls_les));
 }
 
 static PyObject *
-pylibnet_parse_fddi_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_fddi_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_fddi_hdr);
 
-	return Py_BuildValue("{s:i,s:S,s:S,s:i,s:i,s:i,s:S,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:S,s:S,s:B,s:B,s:B,s:S,s:B,s:B}",
 		PYLIBNET_KEYPAIR(fddi_frame_control),
 		PYLIBNET_KEYPAIR_HEX(fddi_dhost, FDDI_ADDR_LEN),
 		PYLIBNET_KEYPAIR_HEX(fddi_shost, FDDI_ADDR_LEN),
@@ -783,11 +797,11 @@ pylibnet_parse_fddi_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_token_ring_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_token_ring_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_token_ring_hdr);
 
-	return Py_BuildValue("{s:i,s:i,s:S,s:S,s:i,s:i,s:i,s:S,:si}",
+	return Py_BuildValue("{s:B,s:B,s:S,s:S,s:B,s:B,s:B,s:S,s:H}",
 		PYLIBNET_KEYPAIR(token_ring_access_control),
 		PYLIBNET_KEYPAIR(token_ring_frame_control),
 		PYLIBNET_KEYPAIR_HEX(token_ring_dhost, TOKEN_RING_ADDR_LEN),
@@ -800,20 +814,20 @@ pylibnet_parse_token_ring_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_bgp4_header_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_bgp4_header_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_bgp4_header_hdr);
-	return Py_BuildValue("{s:s#,s:i,s:i}",
+	return Py_BuildValue("{s:s#,s:H,s:B}",
 		PYLIBNET_KEYPAIR(marker), LIBNET_BGP4_MARKER_SIZE,
 		PYLIBNET_KEYPAIR_HS(len),
 		PYLIBNET_KEYPAIR(type));
 }
 
 static PyObject *
-pylibnet_parse_bgp4_open_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_bgp4_open_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_bgp4_open_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:H,s:H,s:I,s:B}",
 		PYLIBNET_KEYPAIR(version),
 		PYLIBNET_KEYPAIR_HS(src_as),
 		PYLIBNET_KEYPAIR_HS(hold_time),
@@ -822,30 +836,30 @@ pylibnet_parse_bgp4_open_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_bgp4_update_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_bgp4_update_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 { PyErr_SetString(PyErr_LibnetError, "Packet parser not yet implemented."); return NULL; }
 
 static PyObject *
-pylibnet_parse_bgp4_notification_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_bgp4_notification_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_bgp4_notification_hdr);
-	return Py_BuildValue("{s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B}",
 		PYLIBNET_KEYPAIR(err_code),
 		PYLIBNET_KEYPAIR(err_subcode));
 }
 
 static PyObject *
-pylibnet_parse_gre_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_gre_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_gre_hdr);
-	return (hdr->flags_ver & GRE_VERSION_1)?Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i}",
+	return (hdr->flags_ver & GRE_VERSION_1)?Py_BuildValue("{s:H,s:H,s:H,s:H,s:I,s:I}",
 		PYLIBNET_KEYPAIR_HS(flags_ver),
 		PYLIBNET_KEYPAIR_HS(type),
 		PYLIBNET_KEYPAIR_HS(egre_payload_s),
 		PYLIBNET_KEYPAIR_HS(egre_callID),
 		PYLIBNET_KEYPAIR_HL(egre_seq),
 		PYLIBNET_KEYPAIR_HL(egre_ack))
-		:Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i}", 
+		:Py_BuildValue("{s:H,s:H,s:H,s:H,s:I,s:I}", 
 		PYLIBNET_KEYPAIR_HS(flags_ver),
 		PYLIBNET_KEYPAIR_HS(type),
 		PYLIBNET_KEYPAIR_HS(gre_sum),
@@ -856,21 +870,21 @@ pylibnet_parse_gre_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_gre_sre_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_gre_sre_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_gre_sre_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:s#}",
+	return Py_BuildValue("{s:H,s:B,s:B,s:s#}",
 		PYLIBNET_KEYPAIR_HS(af),
 		PYLIBNET_KEYPAIR(sre_offset),
 		PYLIBNET_KEYPAIR(sre_length),
-		PYLIBNET_KEYPAIR(routing), len-3);
+		PYLIBNET_KEYPAIR(routing), b_len-3);
 };
 
 static PyObject *
-pylibnet_parse_ipv6_routing_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipv6_routing_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ipv6_routing_hdr);
-	return Py_BuildValue("{si:,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:B,s:B}",
 		PYLIBNET_KEYPAIR(ip_nh),
 		PYLIBNET_KEYPAIR(ip_len),
 		PYLIBNET_KEYPAIR(ip_rtype),
@@ -878,10 +892,10 @@ pylibnet_parse_ipv6_routing_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ipv6_frag_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipv6_frag_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ipv6_frag_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B,s:H,s:I}",
 		PYLIBNET_KEYPAIR(ip_nh),
 		PYLIBNET_KEYPAIR(ip_reserved),
 		PYLIBNET_KEYPAIR_HS(ip_frag),
@@ -889,28 +903,28 @@ pylibnet_parse_ipv6_frag_h(u_int8_t *buf, u_int32_t len)
 }
 
 static PyObject *
-pylibnet_parse_ipv6_destopts_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipv6_destopts_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ipv6_destopts_hdr);
-	return Py_BuildValue("{s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B}",
 		PYLIBNET_KEYPAIR(ip_nh),
 		PYLIBNET_KEYPAIR(ip_len));
 }
 
 static PyObject *
-pylibnet_parse_ipv6_hbhopts_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_ipv6_hbhopts_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_ipv6_hbhopts_hdr);
-	return Py_BuildValue("{s:i,s:i}",
+	return Py_BuildValue("{s:B,s:B}",
 		PYLIBNET_KEYPAIR(ip_nh),
 		PYLIBNET_KEYPAIR(ip_len));
 }
 
 static PyObject *
-pylibnet_parse_sebek_h(u_int8_t *buf, u_int32_t len)
+pylibnet_parse_sebek_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_sebek_hdr);
-	return Py_BuildValue("{s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:i,s:s#,s:i}",
+	return Py_BuildValue("{s:I,s:H,s:H,s:I,s:I,s:I,s:I,s:I,s:I,s:s#,s:I}",
 		PYLIBNET_KEYPAIR_HL(magic),
 		PYLIBNET_KEYPAIR_HS(version),
 		PYLIBNET_KEYPAIR_HS(type),
@@ -924,7 +938,7 @@ pylibnet_parse_sebek_h(u_int8_t *buf, u_int32_t len)
 		PYLIBNET_KEYPAIR_HL(length));
 }
 
-typedef PyObject *(*PyLibnetParseFunction)(u_int8_t *, u_int32_t);
+typedef PyObject *(*PyLibnetParseFunction)(u_int8_t *, u_int32_t, u_int32_t);
 
 static struct {
 	u_int8_t type;
@@ -1021,14 +1035,14 @@ pylibnet_getheader(context *self, libnet_ptag_t ptag)
 	if (pylibnet_parsers[pblock->type].type != pblock->type) {
 		while(pylibnet_parsers[i].func != NULL) {
 			if (pylibnet_parsers[i].type == pblock->type)
-				return pylibnet_parsers[i].func(pblock->buf, pblock->b_len);
+				return pylibnet_parsers[i].func(pblock->buf, pblock->h_len, pblock->b_len);
 			i++;
 		}
 
 		PyErr_SetString(PyErr_LibnetError, "getheader(): invalid packet type specified.");
 		return NULL;
 	}
-	
-	return pylibnet_parsers[pblock->type].func(pblock->buf, pblock->b_len);
+
+	return pylibnet_parsers[pblock->type].func(pblock->buf, pblock->h_len, pblock->b_len);
 
 }

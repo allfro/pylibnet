@@ -1,4 +1,4 @@
-#!./lnsh -i eth0 -t RAW4
+#!/usr/local/bin/lnsh -i eth0 -t RAW4
 
 print 'Building TCP header:'
 tcp_ptag = tcp(dp=80, control=TH_SYN)

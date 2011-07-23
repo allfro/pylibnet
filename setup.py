@@ -59,7 +59,7 @@ libnet_module = Extension('libnet',
     sources = ['src/libnetmodule.c'])
 
 setup (name = 'pylibnet',
-    version = '2.0-beta-rc10',
+    version = '2.0-beta-rc11',
     description = 'Python Libnet Extension',
     author = 'Nadeem Douba',
 		license = 'GNU GPL',
@@ -68,4 +68,5 @@ setup (name = 'pylibnet',
     long_description = '''
     Python extension for the Libnet packet injection library.
     ''',
-    ext_modules = [libnet_module])
+    ext_modules = [libnet_module],
+    scripts = ['examples/lnsh/lnsh'])
