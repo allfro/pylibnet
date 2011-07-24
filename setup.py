@@ -9,7 +9,7 @@ include_dir = None
 lib_dir = None
 
 
-version = '3.0-beta-rc1'
+package_version = '3.0-beta-rc1'
 prefixes = ['/usr','/usr/local','/sw','/opt/local']
 
 print 'Searching for libnet...'
@@ -61,7 +61,7 @@ libnet_module = Extension('libnet',
     sources = ['src/libnetmodule.c'])
 
 setup (name = 'pylibnet',
-    version = version,
+    version = package_version,
     description = 'Python Libnet Extension',
     author = 'Nadeem Douba',
 		license = 'GNU GPL',

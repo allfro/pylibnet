@@ -1,1 +1,1 @@
-include examples/* src/* INSTALL LICENSE README COPYING
+include examples/* examples/lnsh/* src/* INSTALL LICENSE README COPYING
