@@ -1,7 +1,7 @@
 #!/usr/local/bin/lnsh -i eth0 -t RAW4
 
 print 'Building TCP header:'
-tcp_ptag = tcp(dp=80, control=TH_SYN)
+tcp_ptag = tcp(dp=80, control=TH_SYN, payload='pwnd', ack=0)
 print header(tcp_ptag)
 
 print 'Building IPv4 header:'

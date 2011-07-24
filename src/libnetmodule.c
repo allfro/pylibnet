@@ -22,6 +22,7 @@
 
 #include <Python.h>
 #include "structmember.h"
+#include <string.h>
 
 // Let's avoid the redefinition error shall we :)
 #ifdef _GNU_SOURCE

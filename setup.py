@@ -8,6 +8,8 @@ import sys
 include_dir = None
 lib_dir = None
 
+
+version = '3.0-beta-rc1'
 prefixes = ['/usr','/usr/local','/sw','/opt/local']
 
 print 'Searching for libnet...'
@@ -59,7 +61,7 @@ libnet_module = Extension('libnet',
     sources = ['src/libnetmodule.c'])
 
 setup (name = 'pylibnet',
-    version = '2.0-beta-rc11',
+    version = version,
     description = 'Python Libnet Extension',
     author = 'Nadeem Douba',
 		license = 'GNU GPL',
@@ -69,4 +71,4 @@ setup (name = 'pylibnet',
     Python extension for the Libnet packet injection library.
     ''',
     ext_modules = [libnet_module],
-    scripts = ['examples/lnsh/lnsh'])
+    scripts = ['src/lnsh'])

@@ -28,6 +28,7 @@
 #define PYLIBNET_ERRTYPE(x, y, z) PYLIBNET_ERROR_TYPE(x##_len != y, #x, z)
 
 #define PYLIBNET_ERRPTAG PYLIBNET_ERROR_LIBNET(ptag == -1)
+#define PYLIBNET_ERRPTAG1(x) PYLIBNET_ERROR_LIBNET(x == -1)
 #define PYLIBNET_ERRHWASRC PYLIBNET_ERROR_TYPE(src_len != 6, "src", PYLIBNET_HWA)
 #define PYLIBNET_ERRHWADST PYLIBNET_ERROR_TYPE(dst_len != 6, "dst", PYLIBNET_HWA)
 #define PYLIBNET_ERRIP4SRC PYLIBNET_ERROR_TYPE1(src_len != 4, "src", PYLIBNET_IP4)
@@ -431,7 +432,7 @@ context_build_tcp (context *self, PyObject *args, PyObject *kwargs)
 	u_int16_t sp = PYLIBNET_RANDOM_U16;
 	u_int16_t dp = PYLIBNET_RANDOM_U16;
 	u_int32_t seq = PYLIBNET_RANDOM_U32;
-	u_int32_t ack = PYLIBNET_RANDOM_U32;
+	u_int32_t ack = 0;
 	u_int8_t control = TH_SYN;
 	u_int16_t win = PYLIBNET_RANDOM_U16;
 	u_int16_t sum = 0;
@@ -633,6 +634,7 @@ context_build_icmpv4_redirect (context *self, PyObject *args, PyObject *kwargs)
 	u_int8_t *payload = NULL;
 	u_int32_t payload_s = 0;
 	libnet_ptag_t ptag = 0;
+	libnet_ptag_t data_ptag = 0;
 
 	static char *kwlist[] = {"type", "code", "sum", "gateway", "payload", "ptag", NULL};
 
@@ -641,11 +643,29 @@ context_build_icmpv4_redirect (context *self, PyObject *args, PyObject *kwargs)
 
 	PYLIBNET_ERRIP4(gateway); 
 
+#ifndef NO_LIBNET_BUG_FIX
+
+	// Addresses libnet bug handling payloads in icmpv4 redirects
+	if (payload_s) { 
+		data_ptag = libnet_build_data(payload, payload_s, self->l, 0);
+		PYLIBNET_ERRPTAG1(data_ptag);
+	}
+
+	ptag = libnet_build_icmpv4_redirect (type, code, sum, U_INT32_TP(gateway), NULL, 0, self->l, ptag);
+
+	PYLIBNET_ERRPTAG;
+
+	return (payload_s)?Py_BuildValue("(i,i)", ptag, data_ptag):Py_BuildValue("i", ptag);
+
+#else
+
 	ptag = libnet_build_icmpv4_redirect (type, code, sum, U_INT32_TP(gateway), payload, payload_s, self->l, ptag);
 
 	PYLIBNET_ERRPTAG;
 
 	return Py_BuildValue("i", ptag);
+
+#endif 
 
 }
 
@@ -660,17 +680,36 @@ context_build_icmpv4_timeexceed (context *self, PyObject *args, PyObject *kwargs
 	u_int8_t *payload = NULL;
 	u_int32_t payload_s = 0;
 	libnet_ptag_t ptag = 0;
+	libnet_ptag_t data_ptag = 0;
 
 	static char *kwlist[] = {"type", "code", "sum", "payload", "ptag", NULL};
 
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|BBHz#i", kwlist, &type, &code, &sum, &payload, &payload_s, &ptag))
 		return NULL;
 
+#ifndef NO_LIBNET_BUG_FIX
+
+	// Addresses libnet bug handling payloads in icmpv4 timeexceeds
+	if (payload_s) { 
+		data_ptag = libnet_build_data(payload, payload_s, self->l, 0);
+		PYLIBNET_ERRPTAG1(data_ptag);
+	}
+
+	ptag = libnet_build_icmpv4_timeexceed (type, code, sum, NULL, 0, self->l, ptag);
+
+	PYLIBNET_ERRPTAG;
+
+	return (payload_s)?Py_BuildValue("(i,i)", ptag, data_ptag):Py_BuildValue("i", ptag);
+
+#else
+
 	ptag = libnet_build_icmpv4_timeexceed (type, code, sum, payload, payload_s, self->l, ptag);
 
 	PYLIBNET_ERRPTAG;
 
 	return Py_BuildValue("i", ptag);
+
+#endif
 
 }
 
@@ -1191,7 +1230,11 @@ context_build_rip (context *self, PyObject *args, PyObject *kwargs)
 	PYLIBNET_ERRIP4(mask);
 	PYLIBNET_ERRIP4(next_hop);
 	
-	ptag = libnet_build_rip (cmd, version, rd, af, rt, U_INT32_TP(addr), U_INT32_TP(mask), U_INT32_TP(next_hop), metric, payload, payload_s, self->l, ptag);
+#ifndef NO_LIBNET_BUG_FIX
+	ptag = libnet_build_rip (cmd, version, rd, af, rt, htonl(U_INT32_TP(addr)), htonl(U_INT32_TP(mask)), htonl(U_INT32_TP(next_hop)), metric, payload, payload_s, self->l, ptag);
+#else
+	ptag = libnet_build_rip (cmd, version, rd, af, rt, htonl(U_INT32_TP(addr)), htonl(U_INT32_TP(mask)), htonl(U_INT32_TP(next_hop)), metric, payload, payload_s, self->l, ptag);
+#endif
 
 	PYLIBNET_ERRPTAG;
 
@@ -1819,8 +1862,11 @@ context_build_dhcpv4 (context *self, PyObject *args, PyObject *kwargs)
 	int gip_len = 4;
 	u_int8_t *chaddr = self->hwaddr;
 	int chaddr_len = 6;
+	u_int8_t chaddr_tmp[16];
 	u_int8_t *sname = NULL;
+	u_int8_t sname_tmp[64];
 	u_int8_t *file = NULL;
+	u_int8_t file_tmp[128];
 	u_int8_t *payload = NULL;
 	u_int32_t payload_s = 0;
 	libnet_ptag_t ptag = 0;
@@ -1836,7 +1882,23 @@ context_build_dhcpv4 (context *self, PyObject *args, PyObject *kwargs)
 	PYLIBNET_ERRIP4(gip);
 	PYLIBNET_ERRCHADDR(chaddr);
 
+#ifndef NO_LIBNET_BUG_FIX
+
+	memset(chaddr_tmp, 0, sizeof(chaddr_tmp));
+	memset(sname_tmp, 0, sizeof(sname_tmp));
+	memset(file_tmp, 0, sizeof(file_tmp));
+
+	strncpy((char *)chaddr_tmp, (const char *)chaddr, sizeof(chaddr_tmp) - 1);
+	strncpy((char *)sname_tmp, (const char *)sname, sizeof(sname_tmp) - 1);
+	strncpy((char *)file_tmp, (const char *)file, sizeof(file_tmp) - 1);
+
+	ptag = libnet_build_bootpv4 (opcode, htype, hlen, hopcount, xid, secs, flags, U_INT32_TP(cip), U_INT32_TP(yip), U_INT32_TP(sip), U_INT32_TP(gip), chaddr_tmp, sname_tmp, file_tmp, payload, payload_s, self->l, ptag);
+
+#else
+
 	ptag = libnet_build_dhcpv4 (opcode, htype, hlen, hopcount, xid, secs, flags, U_INT32_TP(cip), U_INT32_TP(yip), U_INT32_TP(sip), U_INT32_TP(gip), chaddr, sname, file, payload, payload_s, self->l, ptag);
+
+#endif 
 
 	PYLIBNET_ERRPTAG;
 
@@ -1866,8 +1928,11 @@ context_build_bootpv4 (context *self, PyObject *args, PyObject *kwargs)
 	int gip_len = 4;
 	u_int8_t *chaddr = self->hwaddr;
 	int chaddr_len = 6;
+	u_int8_t chaddr_tmp[16];
 	u_int8_t *sname = NULL;
+	u_int8_t sname_tmp[64];
 	u_int8_t *file = NULL;
+	u_int8_t file_tmp[128];
 	u_int8_t *payload = NULL;
 	u_int32_t payload_s = 0;
 	libnet_ptag_t ptag = 0;
@@ -1885,7 +1950,23 @@ context_build_bootpv4 (context *self, PyObject *args, PyObject *kwargs)
 
 	AUTOSIZE1(hlen, LIBNET_DHCPV4_H);
 
+#ifndef NO_LIBNET_BUG_FIX
+
+	memset(chaddr_tmp, 0, sizeof(chaddr_tmp));
+	memset(sname_tmp, 0, sizeof(sname_tmp));
+	memset(file_tmp, 0, sizeof(file_tmp));
+
+	strncpy((char *)chaddr_tmp, (const char *)chaddr, sizeof(chaddr_tmp) - 1);
+	strncpy((char *)sname_tmp, (const char *)sname, sizeof(sname_tmp) - 1);
+	strncpy((char *)file_tmp, (const char *)file, sizeof(file_tmp) - 1);
+
+	ptag = libnet_build_bootpv4 (opcode, htype, hlen, hopcount, xid, secs, flags, U_INT32_TP(cip), U_INT32_TP(yip), U_INT32_TP(sip), U_INT32_TP(gip), chaddr_tmp, sname_tmp, file_tmp, payload, payload_s, self->l, ptag);
+
+#else
+
 	ptag = libnet_build_bootpv4 (opcode, htype, hlen, hopcount, xid, secs, flags, U_INT32_TP(cip), U_INT32_TP(yip), U_INT32_TP(sip), U_INT32_TP(gip), chaddr, sname, file, payload, payload_s, self->l, ptag);
+
+#endif
 
 	PYLIBNET_ERRPTAG;
 
