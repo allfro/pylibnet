@@ -1,6 +1,15 @@
 pylibnet - Python module for the libnet packet injection library
 Copyright (C) 2009  Nadeem Douba
 
+WELCOME
+
+Thank you for trying out pylibnet. I hope it will be of
+great value to you. The examples in this directory come
+from the efforts of you (the people) and I have been 
+inspired as of late to contribute to it as well. 
+
+INSTALL
+
 To install this module you will need to install the following:
 	* libnet-1.1.x: to inject your packets.
 
@@ -30,3 +39,70 @@ documentation is embedded in the library and can be accessed via
 the help() function in the Python interpretter or pydoc.
 
 Happy Injecting!
+
+LIBNETERPRETER
+
+lnsh is now part of the standard package for pylibnet. As part
+of this package lnsh will be automatically installed to 
+/usr/local/bin/lnsh for your hacking convenience. More details
+about lnsh below.
+
+EXAMPLES
+
+The following examples require pylibnet, libnet and root 
+access in order for them to work. The newest addition to
+the examples directory is 'lnsh'. It is an interactive 
+pylibnet console that provides a lot of shortcuts. 
+
+Take a look at the example scripts in the lnsh directory. 
+You can use this interpretter in interactive as well as 
+scripted mode. A few things to note:
+
+- In interactive mode functions with no parameters can 
+  be called without the round brackets. For example,
+  'ipv4' would create an ipv4 packet header with all 
+  sorts of random defaults. However, In scripted mode 
+  functions require paranthesis.
+
+- The builders can be called without the 'autobuild_' and
+  'build_' prefixes. For automatic functions use 'auto_<name>',
+  and for non-automatic functions use just the '<name>'. For
+  example, autobuild_arp translates to auto_arp, while
+  build_ipv4 translates to ipv4. The old function names are
+  available as well for backwards compatibility.
+
+- The diagnostic functions can be used without the 'get'
+  prefixes. For example, 'getpacket' translates to 'packet'
+  and so on. Also the 'diag_*' functions can be called
+  without the 'diag_' prefix. For example, 'diag_dump_context'
+  is just 'dump_context'.
+
+- Finally, the injection and device parameters for the context
+  is specified at runtime. No need to build it within the
+  script itself. In script mode you will need to either modify
+  the she-bang (#!) line to specify the appropriate settings or
+  specify them at runtime. For example, 'tcpsyn.libnet' can be 
+  run using the '-i' parameter ('./tcpsyn.libnet -i eth1') or 
+  without the '-i' parameter ('./tcpsyn.libnet') because of the
+  she-bang ('#!/usr/local/bin/lnsh -i eth0 -t RAW4'). Additionally,
+  lnsh scripts can have their own parameters. Take a look at how
+  the dnsv4.libnet example script looks like for reference. The
+  she-bang must have a '--' appended to the end of it to accept
+  parameters (yes I know... it's ugly. but it works). For help in 
+  interactive mode just run lnsh with -h for help or type 'help'
+  at the command line.
+
+Hope you will enjoy using lnsh as I thoroughly enjoyed coding 
+it (yes... I have no life).
+
+
+YOUR CONTRIBUTIONS OR IDEAS
+
+Please feel free to contribute examples or ideas to this project.
+Your effort would be greatly appreciated by myself and most 
+importantly, the open source community. I can be reached at 
+<ndouba at gmail dot com>.
+
+THANK YOU
+
+To all those who have contributed and provided bug reports.

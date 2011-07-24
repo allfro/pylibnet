@@ -1,9 +1,51 @@
+pylibnet - Python module for the libnet packet injection library
+Copyright (C) 2009  Nadeem Douba
+
 WELCOME
 
 Thank you for trying out pylibnet. I hope it will be of
 great value to you. The examples in this directory come
 from the efforts of you (the people) and I have been 
 inspired as of late to contribute to it as well. 
+
+INSTALL
+
+To install this module you will need to install the following:
+	* libnet-1.1.x: to inject your packets.
+
+All these prerequisites can be installed using apt-get, port, or fink.
+Debian users can install the following packages to meet the pre-
+requisite requirements:
+	* build-essential
+	* libnet1-dev
+	* python-dev
+
+For Mac OS/X users, please use the libnet libraries that come from
+the Fink or MacPorts distribution. If you try to compile libnet in 
+Mac OS/X you will run into a bug that causes "pblock not found" errors.
+Mac OS/X users will have to install the following prerequisites 
+in MacPorts:
+  * libnet11
+	* python25 (this is essential since Mac OS/X Python only runs 
+              in 64-bit mode and the libnet lib is 32-bit only)
+
+After installing python25 use the following command to make the 
+MacPorts distro of Python active:
+
+sudo python_select python25
+
+Please let me know if we can improve this wrapper in any way. The
+documentation is embedded in the library and can be accessed via
+the help() function in the Python interpretter or pydoc.
+
+Happy Injecting!
+
+LIBNETERPRETER
+
+lnsh is now part of the standard package for pylibnet. As part
+of this package lnsh will be automatically installed to 
+/usr/local/bin/lnsh for your hacking convenience. More details
+about lnsh below.
 
 EXAMPLES
 
@@ -42,18 +84,25 @@ scripted mode. A few things to note:
   specify them at runtime. For example, 'tcpsyn.libnet' can be 
   run using the '-i' parameter ('./tcpsyn.libnet -i eth1') or 
   without the '-i' parameter ('./tcpsyn.libnet') because of the
-  she-bang ('#!./lnsh -i eth0 -t RAW4'). In interactive mode 
-  just run lnsh with -h for help.
+  she-bang ('#!/usr/local/bin/lnsh -i eth0 -t RAW4'). Additionally,
+  lnsh scripts can have their own parameters. Take a look at how
+  the dnsv4.libnet example script looks like for reference. The
+  she-bang must have a '--' appended to the end of it to accept
+  parameters (yes I know... it's ugly. but it works). For help in 
+  interactive mode just run lnsh with -h for help or type 'help'
+  at the command line.
 
 Hope you will enjoy using lnsh as I thoroughly enjoyed coding 
 it (yes... I have no life).
 
 
-YOUR CONTRIBUTIONS
+YOUR CONTRIBUTIONS OR IDEAS
 
-Please feel free to contribute examples to this project.
-Your effort would be greatly appreciated by myself and
-most importantly, the open source community. I can be reached
-at <ndouba at gmail dot com>.
+Please feel free to contribute examples or ideas to this project.
+Your effort would be greatly appreciated by myself and most 
+importantly, the open source community. I can be reached at 
+<ndouba at gmail dot com>.
 
 THANK YOU
+
+To all those who have contributed and provided bug reports.
