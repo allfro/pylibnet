@@ -33,6 +33,7 @@
 #define PYLIBNET_KEYPAIR_HWADDR2(x,y) x, pylibnet_hex_ntoa(y, 6)
 #define PYLIBNET_KEYPAIR_HEX(x,y) #x, pylibnet_hex_ntoa(hdr->x, y)
 #define PYLIBNET_KEYPAIR_OUI(x) #x, Py_BuildValue("s#", hdr->x, 3)
+#define PYLIBNET_KEYPAIR_DATA "payload", Py_BuildValue("z#", buf+sizeof(hdr), b_len-sizeof(hdr))
 #define PYLIBNET_RESERVED 0
 
 PyObject *pylibnet_addr2name6(struct libnet_in6_addr ip6) {

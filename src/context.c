@@ -852,7 +852,7 @@ static PyMethodDef context_methods[] = {
 		"Builds an RFC 1035 version 4 DNS header. Additional DNS payload information\n"
 			"should be specified using the payload interface.\n"
 			"\nParameters:\n\n"
-			"h_len - header length (default: UDP_DNSV4_H) either UDP_DNSV4_H or TCP_DNV4_H.
+			"h_len - header length (default: UDP_DNSV4_H) either UDP_DNSV4_H or TCP_DNV4_H.\n"
 			"id - DNS packet id\n"
 			"flags - control flags\n"
 			"num_q - number of questions\n"
