@@ -137,38 +137,23 @@ static PyObject *
 context_getpacket(context *self, PyObject *args, PyObject *kwargs)
 {
 	
-	int ptag;
 	PyObject *l = NULL;
-	PyObject *o = NULL, *next_cycle = NULL;
+	PyObject *o = NULL;
 	libnet_pblock_t *pblock = NULL;
 
 	
 	if ((l = PyList_New(0)) == NULL)
 		return NULL;
 	
-	for (ptag = self->l->ptag_state; pblock != self->l->protocol_blocks; ptag--) {
+	for (pblock = self->l->pblock_end; pblock; pblock = pblock->prev) {
 
-		o = pylibnet_getheader(self, ptag);
-		PYLIBNET_ERROR_LIBNET((pblock = libnet_pblock_find (self->l, ptag)) == NULL);
-
-		if (pblock->type == LIBNET_PBLOCK_IPDATA || pblock->type == LIBNET_PBLOCK_TCPDATA) {
-
-			next_cycle = o;
-			continue;
-
-		}
+		o = pylibnet_getheader(self, pblock->ptag);
 
 		if (PyList_Append(l, o) == -1)
 			return NULL;
 
-		if (next_cycle != NULL) {
-			
-			if (PyList_Append(l, next_cycle) == -1)
-				return NULL;
-
-			next_cycle = NULL;
-
-		}
+		if (pblock == self->l->protocol_blocks)
+			break;
 
 	}
 
