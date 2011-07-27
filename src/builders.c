@@ -41,7 +41,6 @@
 #define PYLIBNET_ERRHWA(x) PYLIBNET_ERROR_TYPE(x##_len != 6, #x, PYLIBNET_HWA)
 #define PYLIBNET_ERRIP4(x) PYLIBNET_ERROR_TYPE1(x##_len != 4, #x, PYLIBNET_IP4)
 #define PYLIBNET_ERRIP6(x) PYLIBNET_ERROR_TYPE1(x##_len != 16, #x, PYLIBNET_IP6)
-
 #define PYLIBNET_ERRHWA1(x, y) PYLIBNET_ERROR_TYPE(x##_len != 6, y, PYLIBNET_HWA)
 #define PYLIBNET_ERRIP41(x, y) PYLIBNET_ERROR_TYPE1(x##_len != 4, y, PYLIBNET_IP4)
 #define PYLIBNET_ERRIP61(x, y) PYLIBNET_ERROR_TYPE1(x##_len != 16, y, PYLIBNET_IP6)
@@ -2259,6 +2258,42 @@ context_build_sebek (context *self, PyObject *args, PyObject *kwargs)
 
 }
 
+static PyObject *
+context_build_hsrp (context *self, PyObject *args, PyObject *kwargs)
+{
+
+	libnet_ptag_t ptag = 0;
+	u_int8_t version = LIBNET_HSRP_VERSION;
+	u_int8_t opcode = LIBNET_HSRP_TYPE_HELLO;
+	u_int8_t state = LIBNET_HSRP_STATE_INITIAL;
+	u_int8_t hello_time = PYLIBNET_RANDOM_U8;
+	u_int8_t hold_time = PYLIBNET_RANDOM_U8;
+	u_int8_t priority = 0;
+	u_int8_t group = 0;
+	u_int8_t reserved = 0;
+	u_int8_t *authdata = NULL;
+	int authdata_len = 0;
+	u_int8_t *virtual_ip = self->ipaddr4;
+	int virtual_ip_len = 4;
+	u_int8_t *payload = NULL;
+	u_int8_t payload_s = 0;
+
+	static char *kwlist[] = {"version", "opcode", "state", "hello_time", "hold_time", "priority", "group", "reserved", "authdata", "virtual_ip", "payload", "ptag", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|BBBBBBBBt#t#z#i", kwlist, &opcode, &state, &hello_time, &hold_time, &priority, &group, &reserved, &authdata, &authdata_len, &virtual_ip, &virtual_ip_len, &ptag))
+		return NULL;
+
+	PYLIBNET_ERRTYPE(authdata, HSRP_AUTHDATA_LENGTH, "HSRP auth data");
+	PYLIBNET_ERRIP4(virtual_ip);
+
+	ptag = libnet_build_hsrp (version, opcode, state, hello_time, hold_time, priority, group, reserved, authdata, U_INT32_TP(virtual_ip), payload, payload_s, self->l, ptag);
+
+	PYLIBNET_ERRPTAG;
+
+	return Py_BuildValue("i", ptag);
+
+}
+
 /*
 static PyObject *
 context_build_link (context *self, PyObject *args, PyObject *kwargs)
@@ -2280,16 +2315,13 @@ context_build_link (context *self, PyObject *args, PyObject *kwargs)
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|t#t#t#Hz#i", kwlist, &dst, &dst_len, &src, &src_len, &oui, &oui_len, &type, &payload, &payload_s, &ptag))
 		return NULL;
 
-	PYLIBNET_ERROR_STR(dst, dst_len, 6, "Expected a destination hardware address.");
-	PYLIBNET_ERROR_STR(src, src_len, 6, "Expected a source hardware address.");
-	PYLIBNET_ERROR_STR(oui, oui_len, 3, "Expected an organization unique identifier.");
+	PYLIBNET_ERRHWADST;
+	PYLIBNET_ERRHWASRC;
+	PYLIBNET_ERROUI;
 
 	ptag = libnet_build_link (dst, src, oui, type, payload, payload_s, self->l, ptag);
 
-	if (ptag == -1) {
-		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
-		return NULL;
-	}
+	PYLIBNET_ERRPTAG;
 
 	return Py_BuildValue("i", ptag);
 
@@ -2311,15 +2343,12 @@ context_autobuild_link (context *self, PyObject *args, PyObject *kwargs)
 	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|t#t#H", kwlist, &dst, &dst_len, &oui, &oui_len, &type))
 		return NULL;
 
-	PYLIBNET_ERROR_STR(dst, dst_len, 6, "Expected a destination hardware address.");
-	PYLIBNET_ERROR_STR(oui, oui_len, 3, "Expected an organization unique identifier.");
+	PYLIBNET_ERRHWADST;
+	PYLIBNET_ERROUI;
 
 	ptag = libnet_autobuild_link (dst, oui, type, self->l);
 
-	if (ptag == -1) {
-		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
-		return NULL;
-	}
+	PYLIBNET_ERRPTAG;
 
 	return Py_BuildValue("i", ptag);
 

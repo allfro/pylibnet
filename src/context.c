@@ -1288,6 +1288,24 @@ static PyMethodDef context_methods[] = {
 			"payload - optional payload or None\n"
 			"ptag - protocol tag to modify an existing header, 0 to build a new one\n"
 			"\nReturns: protocol tag value on success, -1 on error"
+	},
+	{
+		"build_hsrp", (PyCFunction)context_build_hsrp, METH_VARARGS | METH_KEYWORDS,
+ 		"Builds a HSRP header. HSRP is a Cisco propietary protocol defined in RFC 2281.\n"
+			"\nParameters:\n\n"
+  			"version - version of the HSRP messages\n"
+  			"opcode - type of message\n"
+  			"state - current state of the router\n"
+  			"hello_time - period in seconds between hello messages\n"
+  			"hold_time - seconds that the current hello message is valid\n"
+  			"priority - priority for the election proccess\n"
+  			"group - standby group\n"
+  			"reserved - reserved field\n"
+  			"authdata - password\n"
+  			"virtual_ip - virtual ip address\n"
+  			"payload - optional payload or None\n"
+  			"ptag - protocol tag to modify an existing header, 0 to build a new one\n"
+			"Returns: protocol tag value on success, -1 on error\n"
 	},/*
 	{
 		"build_link", (PyCFunction)context_build_link, METH_VARARGS | METH_KEYWORDS,
@@ -1357,11 +1375,10 @@ static PyMethodDef context_methods[] = {
 			"\nParameters:\n\n"
 			"s - the string to be parsed\n"
 			"\nReturns: a byte string or None on failure"
-	},/*
+	},
 	{
-		"adv_cull_packet", (PyCFunction)context_adv_cull_packet, METH_VARARGS | METH_KEYWORDS,
-		"[Advanced Interface]\n"
-			"Yanks a prebuilt, wire-ready packet from the given libnet context. If\n"
+		"adv_cull_packet", (PyCFunction)context_adv_cull_packet, METH_NOARGS,
+		"Yanks a prebuilt, wire-ready packet from the given libnet context. If\n"
 			"libnet was configured to do so (which it is by default) the packet will have\n"
 			"all checksums written in. This function is part of the advanced interface\n"
 			"and is only available when libnet is initialized in advanced mode. It is\n"
@@ -1369,35 +1386,42 @@ static PyMethodDef context_methods[] = {
 			"corresponding call to adv_free_packet() should be made to free the\n"
 			"memory packet occupies. If the function fails geterror() can tell you\n"
 			"why.\n"
-			"\nParameters:\n\n"
-			"packet - will contain the wire-ready packet\n"
-			"\nReturns: 1 on success, -1 on failure  "
+			"\nReturns: the packet buffer on success, None on failure  "
 	},
 	{
 		"adv_cull_header", (PyCFunction)context_adv_cull_header, METH_VARARGS | METH_KEYWORDS,
-		"[Advanced Interface] \n"
-			"Pulls the header from the specified ptag from the given libnet context. This\n"
+		"Pulls the header from the specified ptag from the given libnet context. This\n"
 			"function is part of the advanced interface and is only available when libnet\n"
 			"is initialized in advanced mode. If the function fails geterror() can\n"
 			"tell you why.\n"
 			"\nParameters:\n\n"
 			"ptag - the ptag referencing the header to pull\n"
-			"header - will contain the header\n"
-			"\nReturns: 1 on success, -1 on failure"
+			"\nReturns: the header buffer on success, None on failure"
 	},
 	{
 		"adv_write_link", (PyCFunction)context_adv_write_link, METH_VARARGS | METH_KEYWORDS,
-		"[Advanced Interface] \n"
-			"Writes a packet the network at the link layer. This function is useful to\n"
+		"Writes a packet the network at the link layer. This function is useful to\n"
 			"write a packet that has been constructed by hand by the application\n"
 			"programmer or, more commonly, to write a packet that has been returned by\n"
 			"a call to adv_cull_packet(). This function is part of the advanced\n"
 			"interface and is only available when libnet is initialized in advanced mode.\n"
 			"If the function fails geterror() can tell you why.\n"
 			"\nParameters:\n\n"
-			"packet - a pointer to the packet to inject\n"
+			"packet - the packet buffer to inject\n"
 			"\nReturns: the number of bytes written, or -1 on failure"
 	},
+	{
+		"adv_write_raw_ipv4", (PyCFunction)context_adv_write_raw_ipv4, METH_VARARGS | METH_KEYWORDS,
+		"Writes a packet the network at the raw socket layer. This function is useful to\n"
+			"write a packet that has been constructed by hand by the application\n"
+			"programmer or, more commonly, to write a packet that has been returned by\n"
+			"a call to adv_cull_packet(). This function is part of the advanced\n"
+			"interface and is only available when libnet is initialized in advanced mode.\n"
+			"If the function fails geterror() can tell you why.\n"
+			"\nParameters:\n\n"
+			"packet - the packet buffer to inject\n"
+			"\nReturns: the number of bytes written, or -1 on failure"
+	},/*
 	{
 		"adv_free_packet", (PyCFunction)context_adv_free_packet, METH_VARARGS | METH_KEYWORDS,
 		"[Advanced Interface] \n"
@@ -1510,37 +1534,33 @@ static PyMethodDef context_methods[] = {
 	},
 	{
 		"diag_dump_context", (PyCFunction)context_diag_dump_context, METH_VARARGS | METH_KEYWORDS,
-		"[Diagnostic] \n"
-			"Prints the contents of the given context.\n"
+		"Prints the contents of the given context.\n"
 			"\nParameters:\n\n"
 			"\nReturns: the number of libnet contexts currently in the queue"
 	},
 	{
 		"diag_dump_pblock", (PyCFunction)context_diag_dump_pblock, METH_VARARGS | METH_KEYWORDS,
-		"[Diagnostic] \n"
-			"Prints the contents of every pblock.\n"
+		"Prints the contents of every pblock.\n"
 			"\nParameters:\n\n"
 			"\nReturns: the number of libnet contexts currently in the queue"
 	},
 	{
 		"diag_dump_pblock_type", (PyCFunction)context_diag_dump_pblock_type, METH_VARARGS | METH_KEYWORDS,
-		"[Diagnostic] \n"
-			"Returns the canonical name of the pblock type.\n"
+		"Returns the canonical name of the pblock type.\n"
 			"\nParameters:\n\n"
 			"type - pblock type\n"
 			"\nReturns: a string representing the pblock type type or \"unknown\" for an unknown value"
 	},
 	{
 		"diag_dump_hex", (PyCFunction)context_diag_dump_hex, METH_VARARGS | METH_KEYWORDS,
-		"[Diagnostic] \n"
-			"Function prints the contents of the supplied buffer to the supplied\n"
-			"stream pointer. Will swap endianness based disposition of mode variable.\n"
+		"Function prints the contents of the supplied buffer to the supplied\n"
+			"file name. Will swap endianness based disposition of mode variable.\n"
 			"Useful to be used in conjunction with the advanced interface and a culled\n"
 			"packet.\n"
 			"\nParameters:\n\n"
 			"packet - the packet to print\n"
-			"swap - 1 to swap byte order, 0 to not\n"
-			"stream - a stream pointer to print to\n"
+			"swap - 1 to swap byte order, 0 otherwise\n"
+			"file - a file to write to\n"
 			"\nReturns: a string representing the pblock type type or \"unknown\" for an unknown value"
 	},*/
 	{

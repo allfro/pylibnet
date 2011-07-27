@@ -48,7 +48,7 @@ defines = [
 		('LIBNET_MAJOR_VERSION', version_nums[0]),
 		('LIBNET_MINOR_VERSION', version_nums[1]),
 		('LIBNET_RELEASE', version_nums[2]),
-    ('MAJOR_VERSION', '2'),
+    ('MAJOR_VERSION', '3'),
     ('MINOR_VERSION', '0')
 ]
 

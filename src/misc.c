@@ -507,6 +507,98 @@ context_get_hwaddr(context *self)
 
 }
 
+static PyObject *
+context_adv_cull_packet(context *self) 
+{
+	
+	u_int8_t *packet = NULL;
+	u_int32_t packet_s = 0;
+	PyObject *o = NULL;
+	
+	if (libnet_adv_cull_packet(self->l, &packet, &packet_s) == -1) {
+		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
+		return NULL;
+	}
+
+	o = Py_BuildValue("z#", (char *)packet, packet_s);
+	
+	return o;
+
+}
+
+static PyObject *
+context_adv_cull_header(context *self, PyObject *args, PyObject *kwargs)
+{
+
+	libnet_ptag_t ptag = 0;
+	u_int8_t *header = NULL;
+	u_int32_t header_s = 0;
+
+	static char *kwlist[] = {"ptag", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &ptag))
+		return NULL;
+
+	if (libnet_adv_cull_header(self->l, ptag, &header, &header_s) == -1 ) {
+		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
+		return NULL;
+	}
+
+	return Py_BuildValue("z#", (char *)header, header_s);
+
+}
+
+static PyObject *
+context_adv_write_link(context *self, PyObject *args, PyObject *kwargs)
+{
+
+	int written = 0;
+	u_int8_t *packet = NULL;
+	u_int32_t packet_s = 0;
+
+	static char *kwlist[] = {"packet", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s#", kwlist, &packet, &packet_s))
+		return NULL;
+
+
+	if (!packet_s)
+		return Py_BuildValue("i", 0);
+
+	if ((written = libnet_adv_write_link(self->l, packet, packet_s)) == -1 ) {
+		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
+		return NULL;
+	}
+
+	return Py_BuildValue("i", written);
+
+}
+
+static PyObject *
+context_adv_write_raw_ipv4(context *self, PyObject *args, PyObject *kwargs)
+{
+
+	int written = 0;
+	u_int8_t *packet = NULL;
+	u_int32_t packet_s = 0;
+
+	static char *kwlist[] = {"packet", NULL};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|s#", kwlist, &packet, &packet_s))
+		return NULL;
+
+
+	if (!packet_s)
+		return Py_BuildValue("i", 0);
+
+	if ((written = libnet_adv_write_raw_ipv4(self->l, packet, packet_s)) == -1 ) {
+		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
+		return NULL;
+	}
+
+	return Py_BuildValue("i", written);
+
+}
 
 static PyObject *
 context_hex_aton(context *self, PyObject *args, PyObject *kwargs)

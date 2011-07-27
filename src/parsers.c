@@ -939,6 +939,23 @@ pylibnet_parse_sebek_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 		PYLIBNET_KEYPAIR_HL(length));
 }
 
+static PyObject *
+pylibnet_parse_hsrp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
+{
+	PYLIBNET_POINT_HDR(libnet_hsrp_hdr);
+	return Py_BuildValue("{s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:s#,s:s}",
+		PYLIBNET_KEYPAIR_HS(version),
+		PYLIBNET_KEYPAIR_HS(opcode),
+		PYLIBNET_KEYPAIR_HS(state),
+		PYLIBNET_KEYPAIR_HS(hello_time),
+		PYLIBNET_KEYPAIR_HS(hold_time),
+		PYLIBNET_KEYPAIR_HS(priority),
+		PYLIBNET_KEYPAIR_HS(group),
+		PYLIBNET_KEYPAIR_HS(reserved),
+		PYLIBNET_KEYPAIR(authdata), HSRP_AUTHDATA_LENGTH,
+		PYLIBNET_KEYPAIR_INADDR4(virtual_ip));
+}
+
 typedef PyObject *(*PyLibnetParseFunction)(u_int8_t *, u_int32_t, u_int32_t);
 
 static struct {
@@ -1009,6 +1026,7 @@ static struct {
 	{LIBNET_PBLOCK_IPV6_DESTOPTS_H, (PyLibnetParseFunction)pylibnet_parse_ipv6_destopts_h},
 	{LIBNET_PBLOCK_IPV6_HBHOPTS_H, (PyLibnetParseFunction)pylibnet_parse_ipv6_hbhopts_h},
 	{LIBNET_PBLOCK_SEBEK_H, (PyLibnetParseFunction)pylibnet_parse_sebek_h},
+	{LIBNET_PBLOCK_HSRP_H, (PyLibnetParseFunction)pylibnet_parse_hsrp_h},
 	{0, NULL}
 };
 
