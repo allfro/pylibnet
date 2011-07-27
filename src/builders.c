@@ -2258,6 +2258,7 @@ context_build_sebek (context *self, PyObject *args, PyObject *kwargs)
 
 }
 
+#if LIBNET_RELEASE >= 4
 static PyObject *
 context_build_hsrp (context *self, PyObject *args, PyObject *kwargs)
 {
@@ -2280,10 +2281,10 @@ context_build_hsrp (context *self, PyObject *args, PyObject *kwargs)
 
 	static char *kwlist[] = {"version", "opcode", "state", "hello_time", "hold_time", "priority", "group", "reserved", "authdata", "virtual_ip", "payload", "ptag", NULL};
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|BBBBBBBBt#t#z#i", kwlist, &opcode, &state, &hello_time, &hold_time, &priority, &group, &reserved, &authdata, &authdata_len, &virtual_ip, &virtual_ip_len, &ptag))
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|BBBBBBBBz#t#z#i", kwlist, &version, &opcode, &state, &hello_time, &hold_time, &priority, &group, &reserved, &authdata, &authdata_len, &virtual_ip, &virtual_ip_len, &ptag))
 		return NULL;
 
-	PYLIBNET_ERRTYPE(authdata, HSRP_AUTHDATA_LENGTH, "HSRP auth data");
+	PYLIBNET_ERRTYPE(authdata, HSRP_AUTHDATA_LENGTH, "string (8 bytes)");
 	PYLIBNET_ERRIP4(virtual_ip);
 
 	ptag = libnet_build_hsrp (version, opcode, state, hello_time, hold_time, priority, group, reserved, authdata, U_INT32_TP(virtual_ip), payload, payload_s, self->l, ptag);
@@ -2293,6 +2294,7 @@ context_build_hsrp (context *self, PyObject *args, PyObject *kwargs)
 	return Py_BuildValue("i", ptag);
 
 }
+#endif
 
 /*
 static PyObject *

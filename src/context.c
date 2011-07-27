@@ -1289,6 +1289,7 @@ static PyMethodDef context_methods[] = {
 			"ptag - protocol tag to modify an existing header, 0 to build a new one\n"
 			"\nReturns: protocol tag value on success, -1 on error"
 	},
+#if LIBNET_RELEASE >= 4
 	{
 		"build_hsrp", (PyCFunction)context_build_hsrp, METH_VARARGS | METH_KEYWORDS,
  		"Builds a HSRP header. HSRP is a Cisco propietary protocol defined in RFC 2281.\n"
@@ -1306,7 +1307,9 @@ static PyMethodDef context_methods[] = {
   			"payload - optional payload or None\n"
   			"ptag - protocol tag to modify an existing header, 0 to build a new one\n"
 			"Returns: protocol tag value on success, -1 on error\n"
-	},/*
+	},
+#endif
+	/*
 	{
 		"build_link", (PyCFunction)context_build_link, METH_VARARGS | METH_KEYWORDS,
 		"Builds a link layer header for an initialized l. The function\n"
