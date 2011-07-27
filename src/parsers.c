@@ -944,15 +944,15 @@ static PyObject *
 pylibnet_parse_hsrp_h(u_int8_t *buf, u_int32_t h_len, u_int32_t b_len)
 {
 	PYLIBNET_POINT_HDR(libnet_hsrp_hdr);
-	return Py_BuildValue("{s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:s#,s:s}",
-		PYLIBNET_KEYPAIR_HS(version),
-		PYLIBNET_KEYPAIR_HS(opcode),
-		PYLIBNET_KEYPAIR_HS(state),
-		PYLIBNET_KEYPAIR_HS(hello_time),
-		PYLIBNET_KEYPAIR_HS(hold_time),
-		PYLIBNET_KEYPAIR_HS(priority),
-		PYLIBNET_KEYPAIR_HS(group),
-		PYLIBNET_KEYPAIR_HS(reserved),
+	return Py_BuildValue("{s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:B,s:s#,s:s}",
+		PYLIBNET_KEYPAIR(version),
+		PYLIBNET_KEYPAIR(opcode),
+		PYLIBNET_KEYPAIR(state),
+		PYLIBNET_KEYPAIR(hello_time),
+		PYLIBNET_KEYPAIR(hold_time),
+		PYLIBNET_KEYPAIR(priority),
+		PYLIBNET_KEYPAIR(group),
+		PYLIBNET_KEYPAIR(reserved),
 		PYLIBNET_KEYPAIR(authdata), HSRP_AUTHDATA_LENGTH,
 		PYLIBNET_KEYPAIR_INADDR4(virtual_ip));
 }
@@ -1034,7 +1034,7 @@ static struct {
 	{0, NULL}
 };
 
-#define PYLIBNET_NUM_DESCRIPTORS LIBNET_PBLOCK_SEBEK_H
+#define PYLIBNET_NUM_DESCRIPTORS LIBNET_PBLOCK_HSRP_H
 
 static PyObject *
 pylibnet_getheader(context *self, libnet_ptag_t ptag)
