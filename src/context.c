@@ -74,7 +74,7 @@ context_init(context *self, PyObject *args, PyObject *kwargs)
 	}
 
 	ipaddr4 = libnet_get_ipaddr4(self->l);
-	if (ipaddr4 == 0xFFFF) {
+	if (ipaddr4 == 0xFFFFFFFF) {
 		PyErr_SetString(PyErr_LibnetError, libnet_geterror(self->l));
 		return -1;
 	}
