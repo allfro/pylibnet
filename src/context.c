@@ -66,11 +66,6 @@ context_init(context *self, PyObject *args, PyObject *kwargs)
 				&injection_type, &device))
 		return -1; 
 
-	if (device == NULL) {
-		PyErr_SetString(PyErr_LibnetError, "A device name must be specified.");
-		return -1;
-	}
-
 	self->l = libnet_init(injection_type, device, err_buf);
 
 	if (self->l == NULL) {
