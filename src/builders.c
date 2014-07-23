@@ -722,6 +722,9 @@ context_build_icmpv4_timestamp (context *self, PyObject *args, PyObject *kwargs)
 	u_int16_t sum = 0;
 	u_int16_t id = PYLIBNET_RANDOM_U16;
 	u_int16_t seq = PYLIBNET_RANDOM_U16;
+#ifndef n_time
+	typedef u_int32_t n_time;
+#endif
 	n_time otime = PYLIBNET_RANDOM_U32;
 	n_time rtime = PYLIBNET_RANDOM_U32;
 	n_time ttime = PYLIBNET_RANDOM_U32;
